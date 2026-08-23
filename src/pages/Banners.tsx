@@ -10,7 +10,6 @@ const Banners: React.FC = () => {
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
 
   const [banners, setBanners] = useState<Banner[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -36,7 +35,6 @@ const Banners: React.FC = () => {
 
   const fetchBanners = async () => {
     try {
-      setLoading(true);
       const res = await bannerService.getBanners(page, limit, filters);
       if (res.success && res.data) {
         setBanners(res.data);
@@ -45,8 +43,6 @@ const Banners: React.FC = () => {
       }
     } catch (err) {
       console.error("Failed to fetch banners:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -136,7 +132,6 @@ const Banners: React.FC = () => {
         <div className="flex-1 w-full overflow-hidden">
           <BannersTable 
             banners={banners}
-            loading={loading}
             pagination={pagination}
             filters={filters}
             onFilterChange={(key, value) => {

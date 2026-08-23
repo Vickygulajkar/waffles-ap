@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import DataTable from '../common/DataTable';
 import type { Column } from '../common/DataTable';
 import { Search, ChevronDown, Filter, ChevronLeft, ChevronRight, Pencil, MoreVertical, Plus, ArrowUp, ArrowDown } from 'lucide-react';
@@ -7,7 +7,6 @@ import type { Banner } from '../../services/bannerService';
 
 interface BannersTableProps {
   banners?: Banner[];
-  loading?: boolean;
   pagination?: {
     currentPage: number;
     limit: number;
@@ -30,7 +29,6 @@ interface BannersTableProps {
 
 const BannersTable: React.FC<BannersTableProps> = ({
   banners = [],
-  loading = false,
   pagination,
   filters,
   onPageChange,
