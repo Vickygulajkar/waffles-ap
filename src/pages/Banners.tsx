@@ -2,12 +2,61 @@ import React, { useState } from 'react';
 import { Image as ImageIcon, CheckCircle, Clock, XCircle, CalendarDays } from 'lucide-react';
 import StatCard from '../components/common/StatCard';
 import BannersTable from '../components/BannersComponents/BannersTable';
-import type { Banner } from '../components/BannersComponents/BannersTable';
 import BannerFormPane from '../components/BannersComponents/BannerFormPane';
+import { bannerService, type Banner } from '../services/bannerService';
 
 const Banners: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [counts, setCounts] = useState({
+    totalBanners: 0,
+    activeBanners: 0,
+    expiredInactive: 0
+  });
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    limit: 10,
+    totalBanners: 0,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPreviousPage: false
+  });
+  
+  const [filters, setFilters] = useState({
+    search: '',
+    bannerType: 'All Types',
+    status: 'All Status'
+  });
+
+  const fetchBanners = async () => {
+    try {
+      setLoading(true);
+      const res = await bannerService.getBanners(page, limit, filters);
+      if (res.success && res.data) {
+        setBanners(res.data);
+        if (res.counts) setCounts(res.counts);
+        if (res.pagination) setPagination(res.pagination);
+      }
+    } catch (err) {
+      console.error("Failed to fetch banners:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchBanners();
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [page, limit, filters.search, filters.bannerType, filters.status]);
 
   const handleAddBanner = () => {
     setEditingBanner(null);
@@ -50,7 +99,7 @@ const Banners: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Banners"
-          value="24"
+          value={counts.totalBanners.toString()}
           icon={<ImageIcon className="w-6 h-6" />}
           iconBgColor="bg-orange-100"
           iconColor="text-orange-500"
@@ -58,7 +107,7 @@ const Banners: React.FC = () => {
         />
         <StatCard
           title="Active Banners"
-          value="16"
+          value={counts.activeBanners.toString()}
           icon={<CheckCircle className="w-6 h-6" />}
           iconBgColor="bg-green-100"
           iconColor="text-green-500"
@@ -66,7 +115,7 @@ const Banners: React.FC = () => {
         />
         <StatCard
           title="Scheduled Banners"
-          value="6"
+          value="0"
           icon={<Clock className="w-6 h-6" />}
           iconBgColor="bg-yellow-100"
           iconColor="text-yellow-500"
@@ -74,7 +123,7 @@ const Banners: React.FC = () => {
         />
         <StatCard
           title="Expired / Inactive"
-          value="2"
+          value={counts.expiredInactive.toString()}
           icon={<XCircle className="w-6 h-6" />}
           iconBgColor="bg-red-100"
           iconColor="text-red-500"
@@ -86,6 +135,16 @@ const Banners: React.FC = () => {
         {/* Left Column - Main Content */}
         <div className="flex-1 w-full overflow-hidden">
           <BannersTable 
+            banners={banners}
+            loading={loading}
+            pagination={pagination}
+            filters={filters}
+            onFilterChange={(key, value) => {
+              setFilters(prev => ({ ...prev, [key]: value }));
+              setPage(1);
+            }}
+            onPageChange={(p) => setPage(p)}
+            onLimitChange={(l) => { setLimit(l); setPage(1); }}
             onAddBanner={() => { setIsFormOpen(true); handleAddBanner(); }} 
             onEditBanner={(banner) => { setIsFormOpen(true); handleEditBanner(banner); }} 
           />
@@ -97,6 +156,7 @@ const Banners: React.FC = () => {
             <BannerFormPane 
               banner={editingBanner} 
               onClose={() => { setIsFormOpen(false); handleCloseForm(); }} 
+              onSuccess={fetchBanners}
             />
           </div>
         )}

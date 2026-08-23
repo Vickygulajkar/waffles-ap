@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, UploadCloud, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { uploadService } from '../../services/uploadService';
 import { productService } from '../../services/productService';
 import type { CreateProductPayload } from '../../services/productService';
@@ -77,6 +78,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onSu
       };
 
       await productService.createProduct(payload);
+      toast.success('Product created successfully!');
       onSuccess();
       onClose();
       
@@ -91,7 +93,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onSu
       setIsAvailable(true);
       setImageFile(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to create product');
+      const errorMsg = err?.response?.data?.message || err.message || 'Failed to create product';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

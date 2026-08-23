@@ -3,40 +3,43 @@ import DataTable from '../common/DataTable';
 import type { Column } from '../common/DataTable';
 import { Search, ChevronDown, Filter, ChevronLeft, ChevronRight, Pencil, MoreVertical, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 
-export interface Banner {
-  id: string;
-  image: string;
-  title: string;
-  subtitle: string;
-  type: string;
-  position: string;
-  status: 'Active' | 'Scheduled' | 'Expired';
-  publishDate: string;
-  publishTime: string;
-  endDate: string;
-  endTime: string;
-  priority: number;
-}
-
-const mockBanners: Banner[] = [
-  { id: '1', image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=100&h=100&fit=crop', title: 'Weekend Special - 20% OFF', subtitle: 'Enjoy 20% off on all waffles', type: 'Image', position: 'Home Carousel', status: 'Active', publishDate: '20 Aug 2025', publishTime: '10:00 AM', endDate: '27 Aug 2025', endTime: '11:59 PM', priority: 1 },
-  { id: '2', image: 'https://images.unsplash.com/photo-1623428454614-abaf00244e52?w=100&h=100&fit=crop', title: 'Free Delivery', subtitle: 'On orders above ₹399', type: 'Image', position: 'Top Banner', status: 'Active', publishDate: '18 Aug 2025', publishTime: '09:00 AM', endDate: '25 Aug 2025', endTime: '11:59 PM', priority: 2 },
-  { id: '3', image: 'https://images.unsplash.com/photo-1572490122747-3968b75bb8fc?w=100&h=100&fit=crop', title: 'New Shakes Arrived!', subtitle: 'Try our new range of shakes', type: 'Image', position: 'Home Carousel', status: 'Scheduled', publishDate: '22 Aug 2025', publishTime: '10:00 AM', endDate: '05 Sep 2025', endTime: '11:59 PM', priority: 3 },
-  { id: '4', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=100&h=100&fit=crop', title: 'Combo Offer', subtitle: 'Waffle + Shake @ ₹199', type: 'Image', position: 'Category Banner', status: 'Active', publishDate: '15 Aug 2025', publishTime: '08:00 AM', endDate: '31 Aug 2025', endTime: '11:59 PM', priority: 4 },
-  { id: '5', image: 'https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=100&h=100&fit=crop', title: 'Earn Double Points', subtitle: 'On every order this week', type: 'Image', position: 'Bottom Banner', status: 'Expired', publishDate: '05 Aug 2025', publishTime: '10:00 AM', endDate: '12 Aug 2025', endTime: '11:59 PM', priority: 5 },
-  { id: '6', image: 'https://images.unsplash.com/photo-1512152272829-e3139592d56f?w=100&h=100&fit=crop', title: 'Download Our App', subtitle: 'Better experience, more rewards', type: 'Image', position: 'Bottom Banner', status: 'Active', publishDate: '10 Aug 2025', publishTime: '10:00 AM', endDate: '30 Sep 2025', endTime: '11:59 PM', priority: 6 },
-];
+import type { Banner } from '../../services/bannerService';
 
 interface BannersTableProps {
+  banners?: Banner[];
+  loading?: boolean;
+  pagination?: {
+    currentPage: number;
+    limit: number;
+    totalBanners: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+  filters?: {
+    search: string;
+    bannerType: string;
+    status: string;
+  };
+  onPageChange?: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
+  onFilterChange?: (key: string, value: string) => void;
   onAddBanner: () => void;
   onEditBanner?: (banner: Banner) => void;
 }
 
-const BannersTable: React.FC<BannersTableProps> = ({ onAddBanner, onEditBanner }) => {
-  const [banners] = useState<Banner[]>(mockBanners);
-  const [activeTab, setActiveTab] = useState('All Banners');
-  const tabs = ['All Banners', 'Active', 'Scheduled', 'Expired / Inactive'];
-
+const BannersTable: React.FC<BannersTableProps> = ({
+  banners = [],
+  loading = false,
+  pagination,
+  filters,
+  onPageChange,
+  onLimitChange,
+  onFilterChange,
+  onAddBanner,
+  onEditBanner
+}) => {
+  const filterVals = filters || { search: '', bannerType: 'All Types', status: 'All Status' };
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Active': return 'text-green-600 bg-green-500';
@@ -62,56 +65,67 @@ const BannersTable: React.FC<BannersTableProps> = ({ onAddBanner, onEditBanner }
     {
       header: 'Type',
       cell: (item) => (
-        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-[#E85D21]">
-          {item.type}
+        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-[#E85D21] capitalize">
+          {item.bannerType || 'Carousel'}
         </span>
       ),
     },
     {
       header: 'Position',
-      accessorKey: 'position',
-      cellClassName: 'font-semibold text-gray-800 text-xs',
+      cell: () => (
+        <span className="font-semibold text-gray-800 text-xs">
+          Home Carousel
+        </span>
+      ),
     },
     {
       header: 'Status',
       cell: (item) => {
-        const [textColor, dotColor] = getStatusColor(item.status).split(' ');
+        const statusText = item.isActive ? 'Active' : 'Inactive';
+        const [textColor, dotColor] = getStatusColor(statusText).split(' ');
         return (
           <span className={`inline-flex items-center gap-1.5 text-xs font-bold ${textColor}`}>
             <div className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
-            {item.status}
+            {statusText}
           </span>
         );
       },
     },
     {
       header: 'Publish Date',
-      cell: (item) => (
-        <div>
-          <p className="text-xs font-bold text-gray-800">{item.publishDate}</p>
-          <p className="text-[10px] text-gray-500">{item.publishTime}</p>
-        </div>
-      ),
+      cell: (item) => {
+        const dateObj = new Date(item.createdAt);
+        return (
+          <div>
+            <p className="text-xs font-bold text-gray-800">{dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+            <p className="text-[10px] text-gray-500">{dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+          </div>
+        );
+      },
     },
     {
       header: 'End Date',
-      cell: (item) => (
-        <div>
-          <p className="text-xs font-bold text-gray-800">{item.endDate}</p>
-          <p className="text-[10px] text-gray-500">{item.endTime}</p>
-        </div>
-      ),
+      cell: (item) => {
+        if (!item.endDate) return <span className="text-xs font-bold text-gray-400">N/A</span>;
+        const dateObj = new Date(item.endDate);
+        return (
+          <div>
+            <p className="text-xs font-bold text-gray-800">{dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+            <p className="text-[10px] text-gray-500">{dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+          </div>
+        );
+      }
     },
     {
       header: 'Priority',
       cell: (item) => (
         <div className="flex items-center gap-1.5 text-xs font-bold text-gray-800">
-          {item.priority <= 3 ? (
+          {(item.sortOrder || 1) <= 3 ? (
             <ArrowUp className="w-3.5 h-3.5 text-[#E85D21]" />
           ) : (
             <ArrowDown className="w-3.5 h-3.5 text-[#E85D21]" />
           )}
-          {item.priority}
+          {item.sortOrder || 1}
         </div>
       ),
     },
@@ -119,7 +133,7 @@ const BannersTable: React.FC<BannersTableProps> = ({ onAddBanner, onEditBanner }
       header: 'Actions',
       cell: (item) => (
         <div className="flex items-center gap-1">
-          <button 
+          <button
             className="w-7 h-7 flex items-center justify-center rounded border border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors"
             onClick={() => onEditBanner && onEditBanner(item)}
           >
@@ -134,131 +148,120 @@ const BannersTable: React.FC<BannersTableProps> = ({ onAddBanner, onEditBanner }
   ];
 
   return (
-    <div>
-      <div className="flex space-x-8 border-b border-gray-200 mb-6">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-4 text-sm font-semibold transition-colors relative ${
-              activeTab === tab ? 'text-[#E85D21]' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {tab}
-            {activeTab === tab && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E85D21] rounded-t-full" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-4 mb-6">
-        <div className="relative flex-1 min-w-[200px]">
+    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col">
+      {/* Top Bar: Search & Filters */}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
+        <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input 
             type="text" 
+            value={filterVals.search}
+            onChange={(e) => onFilterChange?.('search', e.target.value)}
             placeholder="Search banner title..." 
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D21]/20 focus:border-[#E85D21] transition-all"
+            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#E85D21] focus:ring-1 focus:ring-[#E85D21] transition-all"
           />
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Banner Type</label>
-            <div className="relative">
-              <select className="appearance-none pl-4 pr-10 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#E85D21]/20 focus:border-[#E85D21] bg-white min-w-[120px]">
-                <option>All Types</option>
-                <option>Image</option>
-                <option>Video</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-            </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <span className="absolute -top-2 left-2 bg-white px-1 text-[10px] text-gray-500 font-medium">Banner Type</span>
+            <select 
+              value={filterVals.bannerType}
+              onChange={(e) => onFilterChange?.('bannerType', e.target.value)}
+              className="appearance-none bg-white border border-gray-200 text-gray-700 py-2 pl-3 pr-8 rounded-lg outline-none focus:border-[#E85D21] text-sm font-semibold cursor-pointer h-[38px] min-w-[130px]"
+            >
+              <option>All Types</option>
+              <option>Carousel</option>
+              <option>Offer</option>
+            </select>
+            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Status</label>
-            <div className="relative">
-              <select className="appearance-none pl-4 pr-10 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#E85D21]/20 focus:border-[#E85D21] bg-white min-w-[120px]">
-                <option>All Status</option>
-                <option>Active</option>
-                <option>Scheduled</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-            </div>
+          <div className="relative">
+            <span className="absolute -top-2 left-2 bg-white px-1 text-[10px] text-gray-500 font-medium">Status</span>
+            <select 
+              value={filterVals.status}
+              onChange={(e) => onFilterChange?.('status', e.target.value)}
+              className="appearance-none bg-white border border-gray-200 text-gray-700 py-2 pl-3 pr-8 rounded-lg outline-none focus:border-[#E85D21] text-sm font-semibold cursor-pointer h-[38px] min-w-[120px]"
+            >
+              <option>All Status</option>
+              <option>Active</option>
+              <option>Scheduled</option>
+              <option>Inactive</option>
+            </select>
+            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Date Range</label>
-            <div className="relative">
-              <input 
-                type="text"
-                placeholder="Select date range"
-                className="pl-4 pr-10 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#E85D21]/20 focus:border-[#E85D21] bg-white min-w-[140px]"
-              />
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-            </div>
-          </div>
-
-          <button className="mt-5 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold flex items-center gap-2 hover:bg-gray-50 transition-colors">
-            <Filter className="w-4 h-4" />
-            Filters
+          <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors h-[38px]">
+            <Filter className="w-4 h-4" /> Filters
           </button>
           
           <button 
             onClick={onAddBanner}
-            className="mt-5 ml-2 px-4 py-2 bg-[#E85D21] hover:bg-[#D9551E] text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-md shadow-[#E85D21]/20"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-[#E85D21] text-white text-sm font-semibold rounded-lg hover:bg-[#d6511a] transition-colors h-[38px] shadow-sm"
           >
-            <Plus className="w-4 h-4" />
-            Add Banner
+            <Plus className="w-4 h-4" /> Add Banner
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+      <div className="flex-1 overflow-hidden">
         <DataTable 
           columns={columns} 
           data={banners} 
-          keyExtractor={(item) => item.id}
-          selectable={true}
+          keyExtractor={(item) => item._id}
+          minWidth="900px"
         />
       </div>
+      {/* Pagination */}
+      {pagination && (
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+          <span className="text-sm text-gray-500">
+            Showing {banners.length === 0 ? 0 : (pagination.currentPage - 1) * pagination.limit + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalBanners)} of {pagination.totalBanners} banners
+          </span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => onPageChange?.(pagination.currentPage - 1)}
+                disabled={!pagination.hasPreviousPage}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
+                <button 
+                  key={page}
+                  onClick={() => onPageChange?.(page)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg font-medium ${pagination.currentPage === page ? 'bg-[#E85D21] text-white' : 'border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                >
+                  {page}
+                </button>
+              ))}
 
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-gray-500">
-          Showing 1 to 6 of 24 banners
-        </p>
-        
-        <div className="flex items-center gap-2">
-          <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-400 hover:bg-gray-50">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded border border-[#E85D21] text-[#E85D21] font-semibold text-sm">
-            1
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold text-sm">
-            2
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold text-sm">
-            3
-          </button>
-          <span className="text-gray-400 mx-1">...</span>
-          <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold text-sm">
-            4
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-600 hover:bg-gray-50">
-            <ChevronRight className="w-4 h-4" />
-          </button>
-          
-          <div className="relative ml-4">
-            <select className="appearance-none pl-3 pr-8 py-1.5 border border-gray-200 rounded text-sm font-medium focus:outline-none focus:border-[#E85D21] bg-white text-gray-600">
-              <option>10 / page</option>
-              <option>20 / page</option>
-              <option>50 / page</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
+              <button 
+                onClick={() => onPageChange?.(pagination.currentPage + 1)}
+                disabled={!pagination.hasNextPage}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="relative">
+              <select 
+                value={pagination.limit}
+                onChange={(e) => onLimitChange?.(Number(e.target.value))}
+                className="appearance-none bg-white border border-gray-200 text-gray-700 py-1.5 pl-3 pr-8 rounded-lg outline-none focus:border-[#E85D21] text-sm font-medium cursor-pointer"
+              >
+                <option value="10">10 / page</option>
+                <option value="20">20 / page</option>
+                <option value="50">50 / page</option>
+              </select>
+              <ChevronDown className="w-4 h-4 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
