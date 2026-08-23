@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Filter, Plus, Edit2, MoreVertical, ChevronDown, Calendar as CalendarIcon } from 'lucide-react';
+import { Search, Filter, Plus, Edit2, MoreVertical, ChevronDown } from 'lucide-react';
 import DataTable, { type Column } from '../common/DataTable';
 import type { Offer } from '../../services/offerService';
 
 interface OffersListProps {
   offers?: Offer[];
-  loading?: boolean;
   pagination?: {
     currentPage: number;
     limit: number;
@@ -30,7 +29,6 @@ interface OffersListProps {
 
 const OffersList: React.FC<OffersListProps> = ({ 
   offers = [], 
-  loading = false, 
   pagination,
   filters,
   onPageChange,

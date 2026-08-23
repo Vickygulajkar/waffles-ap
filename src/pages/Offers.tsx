@@ -4,10 +4,10 @@ import { Tag, Gift, Clock, XCircle, Ticket } from 'lucide-react';
 import OffersList from '../components/OffersComponents/OffersList';
 import OfferDetails from '../components/OffersComponents/OfferDetails';
 import { offerService, type Offer } from '../services/offerService';
+import toast from 'react-hot-toast';
 
 const Offers: React.FC = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isAddOfferOpen, setIsAddOfferOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
 
@@ -38,17 +38,15 @@ const Offers: React.FC = () => {
 
   const fetchOffers = async () => {
     try {
-      setLoading(true);
-      const response = await offerService.getOffers(page, limit, filters);
-      if (response.success) {
-        setOffers(response.data);
-        if (response.counts) setCounts(response.counts);
-        if (response.pagination) setPagination(response.pagination);
+      const res = await offerService.getOffers(page, limit, filters);
+      if (res.success && res.data) {
+        setOffers(res.data);
+        if (res.counts) setCounts(res.counts);
+        if (res.pagination) setPagination(res.pagination);
       }
-    } catch (error) {
-      console.error("Error fetching offers:", error);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch offers:", err);
+      toast.error("Failed to load offers");
     }
   };
 
@@ -115,7 +113,6 @@ const Offers: React.FC = () => {
         <div className="flex-1 w-full overflow-hidden">
           <OffersList 
             offers={offers} 
-            loading={loading} 
             pagination={pagination}
             filters={filters}
             onFilterChange={(key, value) => {
