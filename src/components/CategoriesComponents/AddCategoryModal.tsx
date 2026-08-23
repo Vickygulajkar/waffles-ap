@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, UploadCloud, Loader2 } from 'lucide-react';
 import { uploadService } from '../../services/uploadService';
+import { toast } from 'react-hot-toast';
 import { categoryService } from '../../services/categoryService';
 import type { CreateCategoryPayload } from '../../services/categoryService';
 
@@ -50,6 +51,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onClose, on
       };
 
       await categoryService.createCategory(payload);
+      toast.success('Category created successfully!');
       onSuccess();
       onClose();
       
@@ -60,7 +62,9 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onClose, on
       setImageFile(null);
       setIconFile(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to create category');
+      const errorMsg = err?.response?.data?.message || err.message || 'Failed to create category';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

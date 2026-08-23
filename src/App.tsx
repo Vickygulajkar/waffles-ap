@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import './App.css'
 import AdminLayout from './layout/AdminLayout'
 import Login from './pages/Login'
@@ -15,20 +16,23 @@ import Reports from './pages/Reports'
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/dashboard" element={<AdminLayout><Dashboard /></AdminLayout>} />
-      <Route path="/orders" element={<AdminLayout><Orders /></AdminLayout>} />
-      <Route path="/products" element={<AdminLayout><Products /></AdminLayout>} />
-      <Route path="/categories" element={<AdminLayout><Categories /></AdminLayout>} />
-      <Route path="/offers" element={<AdminLayout><Offers /></AdminLayout>} />
-      <Route path="/daily-winner" element={<AdminLayout><DailyWinner /></AdminLayout>} />
-      <Route path="/rewards" element={<AdminLayout><Rewards /></AdminLayout>} />
-      <Route path="/customers" element={<AdminLayout><Customers /></AdminLayout>} />
-      <Route path="/banners" element={<AdminLayout><Banners /></AdminLayout>} />
-      <Route path="/reports" element={<AdminLayout><Reports /></AdminLayout>} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+    <>
+      <Toaster position="top-right" />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<AdminLayout><Dashboard /></AdminLayout>} />
+        <Route path="/orders" element={<AdminLayout><Orders /></AdminLayout>} />
+        <Route path="/products" element={<AdminLayout><Products /></AdminLayout>} />
+        <Route path="/categories" element={<AdminLayout><Categories /></AdminLayout>} />
+        <Route path="/offers" element={<AdminLayout><Offers /></AdminLayout>} />
+        <Route path="/daily-winner" element={<AdminLayout><DailyWinner /></AdminLayout>} />
+        <Route path="/rewards" element={<AdminLayout><Rewards /></AdminLayout>} />
+        <Route path="/customers" element={<AdminLayout><Customers /></AdminLayout>} />
+        <Route path="/banners" element={<AdminLayout><Banners /></AdminLayout>} />
+        <Route path="/reports" element={<AdminLayout><Reports /></AdminLayout>} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </>
   )
 }
 

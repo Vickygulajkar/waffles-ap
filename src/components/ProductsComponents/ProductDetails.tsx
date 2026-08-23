@@ -3,6 +3,7 @@ import { X, Image as ImageIcon, ChevronDown, Loader2 } from 'lucide-react';
 import { productService, type Product } from '../../services/productService';
 import { categoryService, type Category } from '../../services/categoryService';
 import { uploadService } from '../../services/uploadService';
+import { toast } from 'react-hot-toast';
 
 interface ProductDetailsProps {
   productId: string;
@@ -97,10 +98,13 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose, onS
       if (onSuccess) {
         onSuccess();
       }
+      toast.success('Product updated successfully!');
       onClose(); // Optional: close pane on save, or just show success toast. We'll close it to follow the user's flow.
     } catch (err: any) {
       console.error("Failed to update product", err);
-      setError(err.message || 'Failed to update product');
+      const errorMsg = err?.response?.data?.message || err.message || 'Failed to update product';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsSaving(false);
     }
