@@ -27,5 +27,15 @@ export const categoryService = {
     const url = type && type !== 'all' ? `/categories/getAllCategories?type=${type}` : '/categories/getAllCategories';
     const response = await apiClient.get(url);
     return response.data;
+  },
+
+  getCategory: async (categoryId: string) => {
+    const response = await apiClient.get(`/categories/getCategory/${categoryId}`);
+    return response.data;
+  },
+
+  updateCategory: async (categoryId: string, data: Partial<CreateCategoryPayload> & { isActive?: boolean }) => {
+    const response = await apiClient.put(`/categories/updateCategory/${categoryId}`, data);
+    return response.data;
   }
 };
