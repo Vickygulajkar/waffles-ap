@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Plus, Edit2, MoreVertical, ChevronDown, Loader2 } from 'lucide-react';
 import DataTable, { type Column } from '../common/DataTable';
 import AddCategoryModal from './AddCategoryModal';
+import EditCategoryPanel from './EditCategoryPanel';
 import type { Category } from '../../services/categoryService';
 
 interface CategoriesListProps {
@@ -20,6 +21,7 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
   onRefresh 
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
 
   const getStatusBadge = (status: string) => {
     if (status === 'Active') {
@@ -73,9 +75,16 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
     },
     {
       header: 'Actions',
-      cell: () => (
+      cell: (item) => (
         <div className="flex items-center justify-center gap-2">
-          <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={() => setEditingCategoryId(item._id)}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-colors ${
+              editingCategoryId === item._id 
+                ? 'bg-blue-50 border-blue-200 text-blue-600' 
+                : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+            }`}
+          >
             <Edit2 className="w-4 h-4" />
           </button>
           <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
@@ -124,38 +133,57 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex-1 flex items-center justify-center min-h-[300px]">
-          <Loader2 className="w-8 h-8 text-[#E85D21] animate-spin" />
-        </div>
-      ) : (
-        <DataTable 
-          columns={columns}
-          data={categories}
-          keyExtractor={(item) => item._id}
-          minWidth="900px"
-        />
-      )}
+      <div className="flex gap-6 flex-1 min-h-0 h-full">
+        <div className={`flex flex-col transition-all duration-300 ${editingCategoryId ? 'w-2/3' : 'w-full'}`}>
+          {isLoading ? (
+            <div className="flex-1 flex items-center justify-center min-h-[300px]">
+              <Loader2 className="w-8 h-8 text-[#E85D21] animate-spin" />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-x-auto">
+              <DataTable 
+                columns={columns}
+                data={categories}
+                keyExtractor={(item) => item._id}
+                minWidth="700px"
+              />
+            </div>
+          )}
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
-        <span className="text-sm text-gray-500">Showing 1 to 10 of 12 categories</span>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">&lt;</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#E85D21] text-white font-medium">1</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50">2</button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">&gt;</button>
-          </div>
-          <div className="relative">
-            <select className="appearance-none bg-white border border-gray-200 text-gray-700 py-1.5 pl-3 pr-8 rounded-lg outline-none focus:border-[#E85D21] text-sm font-medium cursor-pointer">
-              <option>10 / page</option>
-              <option>20 / page</option>
-              <option>50 / page</option>
-            </select>
-            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          {/* Pagination */}
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+            <span className="text-sm text-gray-500">Showing 1 to 10 of 12 categories</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">&lt;</button>
+                <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#E85D21] text-white font-medium">1</button>
+                <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50">2</button>
+                <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">&gt;</button>
+              </div>
+              <div className="relative">
+                <select className="appearance-none bg-white border border-gray-200 text-gray-700 py-1.5 pl-3 pr-8 rounded-lg outline-none focus:border-[#E85D21] text-sm font-medium cursor-pointer">
+                  <option>10 / page</option>
+                  <option>20 / page</option>
+                  <option>50 / page</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
           </div>
         </div>
+
+        {editingCategoryId && (
+          <div className="w-1/3 min-w-[320px] max-w-[400px] transition-all duration-300">
+            <EditCategoryPanel 
+              categoryId={editingCategoryId} 
+              onClose={() => setEditingCategoryId(null)} 
+              onSuccess={() => {
+                onRefresh();
+                setEditingCategoryId(null);
+              }} 
+            />
+          </div>
+        )}
       </div>
 
       <AddCategoryModal 
