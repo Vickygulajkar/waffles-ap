@@ -15,6 +15,7 @@ export interface DataTableProps<T> {
   selectable?: boolean;
   rowClassName?: (item: T) => string;
   minWidth?: string;
+  onRowClick?: (item: T) => void;
 }
 
 function DataTable<T>({
@@ -23,7 +24,8 @@ function DataTable<T>({
   keyExtractor,
   selectable = false,
   rowClassName,
-  minWidth = '800px'
+  minWidth = '800px',
+  onRowClick
 }: DataTableProps<T>) {
   return (
     <div className="overflow-x-auto flex-1">
@@ -52,9 +54,10 @@ function DataTable<T>({
               <tr 
                 key={keyExtractor(item)} 
                 className={`border-b border-gray-50 transition-colors hover:bg-orange-50/30 ${extraRowClass}`}
+                onClick={() => onRowClick && onRowClick(item)}
               >
                 {selectable && (
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                     <input type="checkbox" className="rounded border-gray-300 text-[#E85D21] focus:ring-[#E85D21]" />
                   </td>
                 )}
