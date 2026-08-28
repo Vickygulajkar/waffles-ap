@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, CheckCircle2, ChefHat, ShoppingBag, Bike, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, CheckCircle2, ChefHat, ShoppingBag, CheckCircle, XCircle } from 'lucide-react';
 
 import { type OrderSummaryData } from '../../services/dashboardService';
 

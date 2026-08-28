@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Calendar, Filter, MoreHorizontal, ChefHat, CheckCircle2, Bike, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Calendar, Filter, MoreHorizontal, ChefHat, CheckCircle2, CheckCircle, XCircle } from 'lucide-react';
 import DataTable, { type Column } from '../common/DataTable';
 import { orderService, type Order } from '../../services/orderService';
 
