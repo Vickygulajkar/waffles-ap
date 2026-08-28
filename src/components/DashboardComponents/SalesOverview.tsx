@@ -1,16 +1,12 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { type SalesOverviewData } from '../../services/dashboardService';
 
-const SalesOverview: React.FC = () => {
-  const data = [
-    { name: 'Mon', sales: 12000 },
-    { name: 'Tue', sales: 20000 },
-    { name: 'Wed', sales: 28650 },
-    { name: 'Thu', sales: 22000 },
-    { name: 'Fri', sales: 34000 },
-    { name: 'Sat', sales: 45000 },
-    { name: 'Sun', sales: 30000 },
-  ];
+interface SalesOverviewProps {
+  data: SalesOverviewData;
+}
+
+const SalesOverview: React.FC<SalesOverviewProps> = ({ data }) => {
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -38,7 +34,7 @@ const SalesOverview: React.FC = () => {
       <div className="flex-1 w-full min-h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
-            data={data}
+            data={data.chartData}
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
           >
             <defs>
@@ -59,14 +55,14 @@ const SalesOverview: React.FC = () => {
         <div>
           <p className="text-xs font-semibold text-gray-500 mb-1">This Week Sales</p>
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-gray-900">₹1,96,750</span>
+            <span className="text-xl font-bold text-gray-900">₹{data.thisWeekSales.toLocaleString()}</span>
             <span className="text-xs font-semibold text-green-600 bg-green-100 px-1.5 py-0.5 rounded flex items-center">↑ 24.5%</span>
           </div>
         </div>
         <div>
           <p className="text-xs font-semibold text-gray-500 mb-1">This Week Orders</p>
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-gray-900">862</span>
+            <span className="text-xl font-bold text-gray-900">{data.thisWeekOrders}</span>
             <span className="text-xs font-semibold text-green-600 bg-green-100 px-1.5 py-0.5 rounded flex items-center">↑ 20.1%</span>
           </div>
         </div>

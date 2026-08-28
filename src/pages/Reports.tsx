@@ -33,19 +33,13 @@ const Reports: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-8 pb-8">
-      {/* Page Header */}
       <div className="flex justify-between items-center mb-2">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Reports</h1>
-          <p className="text-sm text-gray-500">Dashboard &gt; Reports</p>
-        </div>
-        
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm">
             <span className="text-sm font-semibold text-gray-600">21 Aug 2025 - 21 Sep 2025</span>
             <CalendarDays className="w-4 h-4 text-gray-400" />
           </div>
-          
+
           <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 transition-colors bg-white shadow-sm">
             <Download className="w-4 h-4" />
             Export Report
@@ -100,13 +94,13 @@ const Reports: React.FC = () => {
       <div className="flex flex-col xl:flex-row gap-6 items-start">
         {/* Left Column - Main Content */}
         <div className="flex-1 w-full overflow-hidden">
-          
+
           <ReportsTabs />
           <ReportsFilters />
 
           {/* Line Charts Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <LineChartCard 
+            <LineChartCard
               title="Revenue Overview"
               value="₹3,42,580"
               trend="18.6% vs 21 Jul - 20 Aug"
@@ -115,7 +109,7 @@ const Reports: React.FC = () => {
               previousPeriodLabel="21 Jul - 20 Aug 2025"
               yAxisLabels={['100k', '80k', '60k', '40k', '20k', '0']}
             />
-            <LineChartCard 
+            <LineChartCard
               title="Orders Overview"
               value="1,428"
               trend="15.3% vs 21 Jul - 20 Aug"
@@ -128,19 +122,19 @@ const Reports: React.FC = () => {
 
           {/* Donut Charts Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <DonutChartCard 
+            <DonutChartCard
               title="Orders by Status"
               data={ordersByStatusData}
               centerLabel="Total"
               centerValue="1,428"
             />
-            <DonutChartCard 
+            <DonutChartCard
               title="Revenue by Category"
               data={revenueByCategoryData}
               centerLabel="Total"
               centerValue="₹3,42,580"
             />
-            <DonutChartCard 
+            <DonutChartCard
               title="New vs Returning Customers"
               data={customersData}
               centerLabel="Total"

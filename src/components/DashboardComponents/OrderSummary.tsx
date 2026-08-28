@@ -1,15 +1,20 @@
 import React from 'react';
 import { Clock, CheckCircle2, ChefHat, ShoppingBag, Bike, CheckCircle, XCircle } from 'lucide-react';
 
-const OrderSummary: React.FC = () => {
+import { type OrderSummaryData } from '../../services/dashboardService';
+
+interface OrderSummaryProps {
+  data: OrderSummaryData;
+}
+
+const OrderSummary: React.FC<OrderSummaryProps> = ({ data }) => {
   const summaryItems = [
-    { label: 'Pending', count: 12, icon: <Clock className="w-4 h-4 text-orange-500" />, bg: 'bg-orange-50' },
-    { label: 'Confirmed', count: 18, icon: <CheckCircle2 className="w-4 h-4 text-orange-500" />, bg: 'bg-orange-50' },
-    { label: 'Preparing', count: 25, icon: <ChefHat className="w-4 h-4 text-blue-500" />, bg: 'bg-blue-50' },
-    { label: 'Ready', count: 10, icon: <ShoppingBag className="w-4 h-4 text-purple-500" />, bg: 'bg-purple-50' },
-    { label: 'Out for Delivery', count: 8, icon: <Bike className="w-4 h-4 text-green-500" />, bg: 'bg-green-50' },
-    { label: 'Delivered', count: 86, icon: <CheckCircle className="w-4 h-4 text-green-600" />, bg: 'bg-green-100' },
-    { label: 'Cancelled', count: 5, icon: <XCircle className="w-4 h-4 text-red-500" />, bg: 'bg-red-50' },
+    { label: 'Pending', count: data.pending, icon: <Clock className="w-4 h-4 text-orange-500" />, bg: 'bg-orange-50' },
+    { label: 'Confirmed', count: data.confirmed, icon: <CheckCircle2 className="w-4 h-4 text-orange-500" />, bg: 'bg-orange-50' },
+    { label: 'Preparing', count: data.preparing, icon: <ChefHat className="w-4 h-4 text-blue-500" />, bg: 'bg-blue-50' },
+    { label: 'Ready', count: data.ready, icon: <ShoppingBag className="w-4 h-4 text-purple-500" />, bg: 'bg-purple-50' },
+    { label: 'Delivered', count: data.delivered, icon: <CheckCircle className="w-4 h-4 text-green-600" />, bg: 'bg-green-100' },
+    { label: 'Cancelled', count: data.cancelled, icon: <XCircle className="w-4 h-4 text-red-500" />, bg: 'bg-red-50' },
   ];
 
   return (
@@ -40,7 +45,7 @@ const OrderSummary: React.FC = () => {
 
         <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
           <span className="text-sm font-bold text-gray-800">Total Orders</span>
-          <span className="text-sm font-bold text-[#E85D21]">164</span>
+          <span className="text-sm font-bold text-[#E85D21]">{data.totalOrders}</span>
         </div>
       </div>
     </div>
