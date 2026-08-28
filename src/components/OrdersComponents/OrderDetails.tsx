@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChefHat, Phone, MapPin, ChevronDown, CheckCircle2, Bike, CheckCircle, XCircle } from 'lucide-react';
+import { ChefHat, Phone, MapPin, ChevronDown, CheckCircle2, CheckCircle, XCircle } from 'lucide-react';
 import { orderService, type Order } from '../../services/orderService';
 
 interface OrderDetailsProps {

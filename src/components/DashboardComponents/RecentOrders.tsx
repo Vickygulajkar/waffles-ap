@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChefHat, CheckCircle2, Bike, CheckCircle, XCircle } from 'lucide-react';
+import { ChefHat, CheckCircle2, CheckCircle, XCircle } from 'lucide-react';
 import DataTable, { type Column } from '../common/DataTable';
 
 import { type RecentOrderData } from '../../services/dashboardService';
