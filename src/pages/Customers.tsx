@@ -40,9 +40,9 @@ const Customers: React.FC = () => {
             phone: u.mobile || '',
             avatar: (u.name || 'U').substring(0, 2).toUpperCase(),
             avatarImage: u.profileImage,
-            orders: 0,
-            totalSpent: '₹0',
-            points: '0',
+            orders: u.totalOrders || 0,
+            totalSpent: `₹${u.totalSpent || 0}`,
+            points: (u.rewardPoints || 0).toString(),
             joinDate: formattedDate,
             status: u.isActive ? 'Active' : 'Inactive'
           };
