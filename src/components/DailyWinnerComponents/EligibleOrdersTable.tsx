@@ -1,80 +1,136 @@
 import React, { useState } from 'react';
 import DataTable from '../common/DataTable';
 import type { Column } from '../common/DataTable';
-import { Search, ChevronDown, RefreshCw } from 'lucide-react';
+import { Search, ChevronDown, RefreshCw, Trophy } from 'lucide-react';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
+import { dailyWinnerService } from '../../services/dailyWinnerService';
 
-interface Winner {
+export interface EligibleOrder {
   _id: string;
+  ticketId: string;
   date: string;
-  winnerName: string;
-  orderNumber: number;
-  orderDate: string;
-  wonBackAmount: number;
-  userId: {
-    mobile: string;
+  status: string;
+  isWinner: boolean;
+  scratched: boolean;
+  user: {
+    _id: string;
     name: string;
     email: string;
   };
+  order: {
+    _id: string;
+    orderNumber: string;
+    totalAmount: number;
+    createdAt: string;
+    orderStatus: string;
+    paymentStatus: string;
+  };
+  createdAt: string;
 }
 
 interface EligibleOrdersTableProps {
-  winners?: Winner[];
+  orders?: EligibleOrder[];
   loading?: boolean;
   onRefresh?: () => void;
 }
 
-const EligibleOrdersTable: React.FC<EligibleOrdersTableProps> = ({ winners = [], loading, onRefresh }) => {
+const EligibleOrdersTable: React.FC<EligibleOrdersTableProps> = ({ orders = [], loading, onRefresh }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredWinners = winners.filter(w =>
-    w.winnerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    w.userId?.mobile?.includes(searchTerm) ||
-    w.orderNumber?.toString().includes(searchTerm)
+  const filteredOrders = orders.filter(o =>
+    o.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    o.order?.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    o.ticketId?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getInitials = (name: string) => {
     return name?.substring(0, 2).toUpperCase() || 'W';
   };
 
-  const columns: Column<Winner>[] = [
+  const columns: Column<EligibleOrder>[] = [
     {
-      header: 'Order ID',
-      cell: (winner) => `#${winner.orderNumber}`,
+      header: 'Ticket ID',
+      cell: (order) => order.ticketId,
       cellClassName: 'font-semibold text-gray-900',
     },
     {
       header: 'Customer',
-      cell: (winner) => (
+      cell: (order) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-xs font-bold text-orange-600 shrink-0">
-            {getInitials(winner.winnerName)}
+            {getInitials(order.user.name)}
           </div>
           <div>
-            <p className="font-semibold text-gray-900 text-sm">{winner.winnerName}</p>
-            <p className="text-xs text-gray-500">{winner.userId?.mobile}</p>
+            <p className="font-semibold text-gray-900 text-sm">{order.user.name}</p>
+            <p className="text-xs text-gray-500">{order.user.email}</p>
           </div>
         </div>
       ),
     },
     {
       header: 'Date',
-      cell: (winner) => (
+      cell: (order) => (
         <span className="text-gray-700 font-medium text-sm">
-          {new Date(winner.date).toLocaleDateString()}
+          {new Date(order.date).toLocaleDateString()}
         </span>
       ),
     },
     {
-      header: 'Won Amount',
-      cell: (winner) => `₹${winner.wonBackAmount}`,
-      cellClassName: 'font-semibold text-green-600',
+      header: 'Order Amount',
+      cell: (order) => `₹${order.order.totalAmount}`,
+      cellClassName: 'font-semibold text-gray-900',
     },
     {
-      header: 'Order Date',
-      cell: (winner) => (
-        <span className="text-gray-600 font-medium text-xs">
-          {new Date(winner.orderDate).toLocaleString()}
+      header: 'Status',
+      cell: (order) => (
+        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+          order.order.orderStatus === 'completed' || order.order.orderStatus === 'confirmed' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-700'
+        }`}>
+          {order.order.orderStatus.charAt(0).toUpperCase() + order.order.orderStatus.slice(1)}
         </span>
+      ),
+    },
+    {
+      header: 'Action',
+      cell: (order) => (
+        order.isWinner ? (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-lg whitespace-nowrap shadow-sm border border-yellow-200">
+            <Trophy className="w-3.5 h-3.5" />
+            Winner
+          </span>
+        ) : (
+          <button 
+            className="px-3 py-1.5 bg-[#E85D21] text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-[#d0531e] transition-colors whitespace-nowrap"
+            onClick={async () => {
+              const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: `You want to reveal winner for order #${order.order.orderNumber}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#E85D21',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, reveal it!'
+              });
+              
+              if (result.isConfirmed) {
+                try {
+                  const res = await dailyWinnerService.makeWinner(order._id);
+                  if (res.success) {
+                    toast.success('Winner revealed successfully!');
+                    if (onRefresh) onRefresh();
+                  } else {
+                    toast.error(res.message || 'Failed to reveal winner');
+                  }
+                } catch (error: any) {
+                  toast.error(error.response?.data?.message || 'Error revealing winner');
+                }
+              }
+            }}
+          >
+            Reveal Winner
+          </button>
+        )
       ),
     },
   ];
@@ -83,9 +139,9 @@ const EligibleOrdersTable: React.FC<EligibleOrdersTableProps> = ({ winners = [],
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">All Winners</h2>
+          <h2 className="text-lg font-bold text-gray-900">Eligible Orders</h2>
         </div>
-        <p className="text-sm font-semibold text-gray-500">Total Winners: {winners.length}</p>
+        <p className="text-sm font-semibold text-gray-500">Total Eligible: {orders.length}</p>
       </div>
 
       <div className="flex gap-4 mb-6">
@@ -93,7 +149,7 @@ const EligibleOrdersTable: React.FC<EligibleOrdersTableProps> = ({ winners = [],
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by order ID, customer name or phone..."
+            placeholder="Search by ticket ID, order ID, or customer name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D21]/20 focus:border-[#E85D21] transition-all"
@@ -122,14 +178,14 @@ const EligibleOrdersTable: React.FC<EligibleOrdersTableProps> = ({ winners = [],
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
         <DataTable
           columns={columns}
-          data={filteredWinners}
-          keyExtractor={(winner) => winner._id}
+          data={filteredOrders}
+          keyExtractor={(order) => order._id}
         />
       </div>
 
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-gray-500">
-          Showing {filteredWinners.length} of {winners.length} winners
+          Showing {filteredOrders.length} of {orders.length} orders
         </p>
       </div>
     </div>

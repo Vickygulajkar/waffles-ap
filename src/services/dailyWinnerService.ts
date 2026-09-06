@@ -1,22 +1,23 @@
 import { apiClient } from './apiClient';
 
 export const dailyWinnerService = {
-  getAllWinners: async () => {
+
+  getEligibleOrders: async () => {
     try {
-      const response = await apiClient.get('/daily-winner/all');
+      const response = await apiClient.get('/daily-winner/eligible-orders');
       return response.data;
     } catch (error) {
-      console.error('Error fetching all daily winners:', error);
+      console.error('Error fetching eligible orders:', error);
       throw error;
     }
   },
 
-  getTodayWinner: async () => {
+  makeWinner: async (winnerId: string) => {
     try {
-      const response = await apiClient.get('/daily-winner/today');
+      const response = await apiClient.put(`/daily-winner/make-winner/${winnerId}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching today daily winner:', error);
+      console.error('Error making winner:', error);
       throw error;
     }
   },

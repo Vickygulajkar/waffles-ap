@@ -16,22 +16,29 @@ const DailyWinner: React.FC = () => {
     thisMonthWinners: 0,
     todaysOrders: 0
   });
-  const [winners, setWinners] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await dailyWinnerService.getAllWinners();
+      
+      const res = await dailyWinnerService.getEligibleOrders();
+      
       if (res.success) {
-        setSummary(res.data.summary || {});
-        setWinners(res.data.winners || []);
-      } else {
-        toast.error(res.message || 'Failed to fetch data');
+        setOrders(res.data.orders);
+        setSummary({
+          totalWinners: res.data.summary.totalWinners,
+          rewardsGiven: res.data.summary.rewardsGiven,
+          thisMonthWinners: res.data.summary.thisMonthWinners,
+          todaysOrders: res.data.summary.todayEligibleOrders,
+          todayWinner: res.data.summary.todayWinner
+        });
       }
+      
+      setLoading(false);
     } catch (error) {
       toast.error('Error fetching data');
-    } finally {
       setLoading(false);
     }
   };
@@ -93,12 +100,12 @@ const DailyWinner: React.FC = () => {
             </p>
           </div>
 
-          <EligibleOrdersTable winners={winners} loading={loading} onRefresh={fetchData} />
+          <EligibleOrdersTable orders={orders} loading={loading} onRefresh={fetchData} />
         </div>
 
         {/* Right Column - Sidebar Widgets */}
         <div className="w-full lg:w-80 flex flex-col gap-6">
-          <WinnerCard />
+          <WinnerCard winner={summary.todayWinner} />
           {/* <RewardDetails /> */}
           <SelectionRules />
           {/* <RecentWinners /> */}
